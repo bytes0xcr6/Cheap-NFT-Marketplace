@@ -2,48 +2,18 @@
 pragma solidity 0.8.28;
 
 /**
- * @title INFTMarketplace
+ * @notice Interface for the NFT marketplace contract
+ * @dev Defines the core functionality and events for the marketplace
  * @author 0xCR6 - https://www.0xcr6.dev
- * @notice Interface for the NFT Marketplace contract
  */
 interface INFTMarketplace {
-    /// @notice Custom errors
-    error ListingExpired();
-    error BidExpired();
-    error InvalidBuyerSignature();
-    error TradeAlreadySettled();
-    error TokenTransferFailed();
-    error InsufficientFunds(address buyer, uint256 required, uint256 actual);
-    error InsufficientAllowance(address buyer, uint256 required, uint256 actual);
-
-    /// @notice Stores information about an NFT listing
-    struct Listing {
-        address nftContract;
-        uint256 tokenId;
-        address erc20Token;
-        uint256 minPrice;
-        address seller;
-        uint256 deadline;
-    }
-
-    /// @notice Stores information about a bid
-    struct Bid {
-        address bidder;
-        uint256 amount;
-        uint256 listingId;
-        uint256 deadline;
-    }
-
-    /// @notice Emitted when a new listing is created
-    event ListingCreated(
-        uint256 indexed listingId,
-        address indexed seller,
-        address indexed nftContract,
-        uint256 tokenId,
-        uint256 minPrice
-    );
-
-    /// @notice Emitted when a trade is settled
+    /**
+     * @notice Emitted when a trade is successfully settled
+     * @param listingId The ID of the listing that was settled
+     * @param seller The address of the NFT seller
+     * @param buyer The address of the NFT buyer
+     * @param amount The amount of ERC20 tokens paid
+     */
     event TradeSettled(
         uint256 indexed listingId,
         address indexed seller,
@@ -51,57 +21,44 @@ interface INFTMarketplace {
         uint256 amount
     );
 
-    /// @notice Creates a hash of the listing parameters
-    /// @dev This hash will be signed by the seller
-    function createListingHash(
-        uint256 listingId,
-        address nftContract,
-        uint256 tokenId,
-        address erc20Token,
-        uint256 minPrice,
-        uint256 deadline
-    ) external pure returns (bytes32);
+    /**
+     * @notice Error thrown when a listing has expired
+     */
+    error ListingExpired();
 
-    /// @notice Creates a hash of the bid parameters
-    /// @dev This hash will be signed by the buyer
-    function createBidHash(
-        uint256 listingId,
-        uint256 amount,
-        uint256 deadline
-    ) external pure returns (bytes32);
+    /**
+     * @notice Error thrown when a bid has expired
+     */
+    error BidExpired();
 
-    /// @notice Checks if both bid and listing are valid
-    /// @dev Returns separate validity status for buyer and seller
-    /// @return buyerValid True if buyer has sufficient balance and approval
-    /// @return sellerValid True if seller owns the NFT and has given approval
-    function checkTradeValidity(
-        address buyer,
-        address seller,
-        address nftContract,
-        uint256 tokenId,
-        address erc20Token,
-        uint256 amount
-    ) external view returns (bool buyerValid, bool sellerValid);
+    /**
+     * @notice Error thrown when the buyer's signature is invalid
+     */
+    error InvalidBuyerSignature();
 
-    /// @notice Settles a trade using signatures from both parties
-    /// @dev Requires valid signatures and transfers both NFT and tokens
-    function settleTrade(
-        uint256 listingId,
-        address nftContract,
-        uint256 tokenId,
-        address erc20Token,
-        uint256 amount,
-        uint256 listingDeadline,
-        uint256 bidDeadline,
-        bytes memory sellerSignature,
-        bytes memory buyerSignature,
-        address buyer
-    ) external;
+    /**
+     * @notice Error thrown when a trade has already been settled
+     */
+    error TradeAlreadySettled();
 
-    /// @notice Returns whether a signature pair has been used
-    /// @dev Used to prevent signature replay attacks
-    function usedSignatures(bytes32 hash) external view returns (bool);
+    /**
+     * @notice Error thrown when token transfer fails
+     */
+    error TokenTransferFailed();
 
-    /// @notice Returns the current listing counter
-    function listingCounter() external view returns (uint256);
+    /**
+     * @notice Error thrown when buyer has insufficient funds
+     * @param buyer The address of the buyer
+     * @param required The amount required
+     * @param available The amount available
+     */
+    error InsufficientFunds(address buyer, uint256 required, uint256 available);
+
+    /**
+     * @notice Error thrown when buyer has insufficient allowance
+     * @param buyer The address of the buyer
+     * @param required The amount required
+     * @param available The amount available
+     */
+    error InsufficientAllowance(address buyer, uint256 required, uint256 available);
 } 

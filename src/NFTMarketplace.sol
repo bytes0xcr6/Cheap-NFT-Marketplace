@@ -7,19 +7,33 @@ import {ECDSA} from "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.s
 import {INFTMarketplace} from "./interfaces/INFTMarketplace.sol";
 
 /**
- * @title Test Token
+ * @notice A gas-efficient NFT marketplace that enables trading between ERC721 and ERC20 tokens using off-chain signatures
+ * @dev Implements signature-based trading with replay protection and deadline-based expiration
  * @author 0xCR6 - https://www.0xcr6.dev
- * @notice A simple ERC20 token for testing purposes
  */
 contract NFTMarketplace is INFTMarketplace {
-    /// @notice Tracks used signatures to prevent replay attacks
+    /**
+     * @notice Tracks used signatures to prevent replay attacks
+     * @dev Maps the hash of combined signatures to a boolean indicating if they've been used
+     */
     mapping(bytes32 => bool) public usedSignatures;
     
-    /// @notice Counter for listing IDs
+    /**
+     * @notice Counter for listing IDs
+     * @dev Increments with each new listing to ensure unique IDs
+     */
     uint256 public listingCounter;
 
-    /// @notice Creates a hash of the listing parameters
-    /// @dev This hash will be signed by the seller
+    /**
+     * @notice Creates a hash of the listing parameters that will be signed by the seller
+     * @param listingId Unique identifier for the listing
+     * @param nftContract Address of the NFT contract
+     * @param tokenId ID of the NFT being sold
+     * @param erc20Token Address of the ERC20 token used for payment
+     * @param minPrice Minimum price in ERC20 tokens
+     * @param deadline Timestamp after which the listing expires
+     * @return Hash of the listing parameters
+     */
     function createListingHash(
         uint256 listingId,
         address nftContract,
@@ -40,8 +54,13 @@ contract NFTMarketplace is INFTMarketplace {
         );
     }
 
-    /// @notice Creates a hash of the bid parameters
-    /// @dev This hash will be signed by the buyer
+    /**
+     * @notice Creates a hash of the bid parameters that will be signed by the buyer
+     * @param listingId ID of the listing being bid on
+     * @param amount Amount of ERC20 tokens offered
+     * @param deadline Timestamp after which the bid expires
+     * @return Hash of the bid parameters
+     */
     function createBidHash(
         uint256 listingId,
         uint256 amount,
@@ -56,10 +75,17 @@ contract NFTMarketplace is INFTMarketplace {
         );
     }
 
-    /// @notice Checks if both bid and listing are valid
-    /// @dev Returns separate validity status for buyer and seller
-    /// @return buyerValid True if buyer has sufficient balance and approval
-    /// @return sellerValid True if seller owns the NFT and has given approval
+    /**
+     * @notice Checks if both bid and listing are valid by verifying balances and approvals
+     * @param buyer Address of the buyer
+     * @param seller Address of the seller
+     * @param nftContract Address of the NFT contract
+     * @param tokenId ID of the NFT
+     * @param erc20Token Address of the payment token
+     * @param amount Amount of tokens to be transferred
+     * @return buyerValid True if buyer has sufficient balance and approval
+     * @return sellerValid True if seller owns the NFT and has given approval
+     */
     function checkTradeValidity(
         address buyer,
         address seller,
@@ -80,8 +106,19 @@ contract NFTMarketplace is INFTMarketplace {
                        nft.isApprovedForAll(seller, address(this)));
     }
 
-    /// @notice Settles a trade using signatures from both parties
-    /// @dev Requires valid signatures and transfers both NFT and tokens
+    /**
+     * @notice Settles a trade by verifying signatures and executing transfers
+     * @param listingId Unique identifier for the listing
+     * @param nftContract Address of the NFT contract
+     * @param tokenId ID of the NFT being traded
+     * @param erc20Token Address of the payment token
+     * @param amount Amount of tokens to be transferred
+     * @param listingDeadline Expiration timestamp for the listing
+     * @param bidDeadline Expiration timestamp for the bid
+     * @param sellerSignature Signature from the seller
+     * @param buyerSignature Signature from the buyer
+     * @param buyer Address of the buyer
+     */
     function settleTrade(
         uint256 listingId,
         address nftContract,
@@ -117,7 +154,20 @@ contract NFTMarketplace is INFTMarketplace {
         emit TradeSettled(listingId, seller, buyer, amount);
     }
 
-    /// @dev Internal function to verify signatures
+    /**
+     * @notice Internal function to verify signatures and prevent replay attacks
+     * @param listingId Unique identifier for the listing
+     * @param nftContract Address of the NFT contract
+     * @param tokenId ID of the NFT being traded
+     * @param erc20Token Address of the payment token
+     * @param amount Amount of tokens to be transferred
+     * @param listingDeadline Expiration timestamp for the listing
+     * @param bidDeadline Expiration timestamp for the bid
+     * @param sellerSignature Signature from the seller
+     * @param buyerSignature Signature from the buyer
+     * @param buyer Address of the buyer
+     * @return seller Address of the seller, derived from the signature
+     */
     function _verifySignatures(
         uint256 listingId,
         address nftContract,
@@ -156,7 +206,15 @@ contract NFTMarketplace is INFTMarketplace {
         usedSignatures[tradeHash] = true;
     }
 
-    /// @dev Internal function to execute transfers
+    /**
+     * @notice Internal function to execute NFT and token transfers
+     * @param nftContract Address of the NFT contract
+     * @param tokenId ID of the NFT being traded
+     * @param erc20Token Address of the payment token
+     * @param amount Amount of tokens to be transferred
+     * @param seller Address of the seller
+     * @param buyer Address of the buyer
+     */
     function _executeTransfers(
         address nftContract,
         uint256 tokenId,
