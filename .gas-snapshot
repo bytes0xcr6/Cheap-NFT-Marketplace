@@ -1,5 +1,0 @@
-NFTMarketplaceTest:testCannotSettleExpiredListing() (gas: 21185)
-NFTMarketplaceTest:testCannotSettleTradeWithInvalidSignatures() (gas: 94672)
-NFTMarketplaceTest:testCreateBidHash() (gas: 9352)
-NFTMarketplaceTest:testCreateListingHash() (gas: 13695)
-NFTMarketplaceTest:testSettleTrade() (gas: 134075)
