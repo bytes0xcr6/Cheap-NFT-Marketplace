@@ -87,4 +87,4 @@ forge script script/Deploy.s.sol:DeployScript \
 
 ## License
 
-MIT License - see [LICENSE.md](LICENSE.md)
+MIT License - see [LICENSE](LICENSE)
