@@ -7,9 +7,9 @@ import {TestToken} from "../src/TestToken.sol";
 
 contract DeployTestContractsScript is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        // The broadcaster is supplied by forge --account / --keystore.
         
-        vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast();
         TestNFT nft = new TestNFT();
         TestToken token = new TestToken();
         vm.stopBroadcast();

@@ -70,7 +70,7 @@ forge script script/Deploy.s.sol:DeployScript \
     --verify \
     --chain arbitrum-sepolia \
     --etherscan-api-key $ARBISCAN_API_KEY \
-    --private-key $PRIVATE_KEY \
+    --account $ETH_KEYSTORE_ACCOUNT \
     -vvvv
 
 ```

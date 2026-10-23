@@ -6,9 +6,9 @@ import {NFTMarketplace} from "../src/NFTMarketplace.sol";
 
 contract DeployMarketplaceScript is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        // The broadcaster is supplied by forge --account / --keystore.
         
-        vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast();
         NFTMarketplace marketplace = new NFTMarketplace();
         vm.stopBroadcast();
 
